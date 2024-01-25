@@ -1,3 +1,7 @@
 #viewport {
     image-rendering: pixelated;
 }
+
+body {
+    background-color: black;
+}

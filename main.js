@@ -24,6 +24,11 @@ class complex {
         this.b = 2*oldA*oldB
         return this
     }
+
+    module_carre(){
+        return this.a * this.a + this.b * this.b
+    }
+
 }
 
 window.onload = function() {
@@ -66,16 +71,16 @@ function set_pixel(imgData,x,y,r,g,b,size){
 function check_pixel(a, c, precision){
     let z = new complex(a.a, a.b);
     let k = 0;
-    while( k <= precision && z.module()<=2){
+    while( z.module_carre()<=4) {
+        z= z.square().addition(c);
+        if (k++ > precision) return -1;
+    }
+    return k;
+    /*while( k <= precision && z.module_carre()<=4){
         z= z.square().addition(c);
         k++;
     }
-    if (z.module()<=2){
-        return -1;
-    }
-    else{
-        return k;
-    }
+    return (z.module_carre()<=4) ? -1 : k;*/
 }
 
 function check_mandelbrot(c, precision){
@@ -92,7 +97,9 @@ function get_positional_mandelbrot_complex(x,y,size){
     return new complex(-2+2.7*(x/size[0]),-(7/6)+(14/6)*(y/size[1]));
 }
 
+/// TODO geneerate only the upper half and copy it
 function generate_initial(size,mandelbrotImageData,mandelbrotCTX,precision){
+    console.time("temps")
     for (let y = 0; y <= size[1]; y++){
         for (let x = 0; x <= size[0]; x++){
             let c = get_positional_mandelbrot_complex(x,y,size);
@@ -110,7 +117,7 @@ function generate_initial(size,mandelbrotImageData,mandelbrotCTX,precision){
             set_pixel(mandelbrotImageData,x,y,r,g,b,size);
             }  
         }   
-    
+        console.timeEnd("temps")
     paint_canvas(mandelbrotImageData, mandelbrotCTX);
 }
 
@@ -151,7 +158,5 @@ function generate_julia(a,size,imageData,ctx,precision){
             set_pixel(imageData,x,y,r,g,b,size);
             }  
         }   
-    
     paint_canvas(imageData, ctx);
-    console.log("zbim")
 }
