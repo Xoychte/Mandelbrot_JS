@@ -46,7 +46,10 @@ window.onload = function() {
 }
 
 function get_size(){
-    const width = Number(document.getElementById("viewport").getAttribute("width"));
+    let width = Number(document.getElementById("viewport").getAttribute("width"));
+    if (width%2 == 0){
+        width+=1
+    }
     const height = Math.floor(width / (81/70))
     return [width, height]
 }
@@ -97,10 +100,10 @@ function get_positional_mandelbrot_complex(x,y,size){
     return new complex(-2+2.7*(x/size[0]),-(7/6)+(14/6)*(y/size[1]));
 }
 
-/// TODO geneerate only the upper half and copy it
 function generate_initial(size,mandelbrotImageData,mandelbrotCTX,precision){
     console.time("temps")
-    for (let y = 0; y <= size[1]; y++){
+    ///Generate the upper half
+    for (let y = 0; y <= Math.floor(size[1]/2); y++){
         for (let x = 0; x <= size[0]; x++){
             let c = get_positional_mandelbrot_complex(x,y,size);
             let r, g, b;
@@ -117,6 +120,17 @@ function generate_initial(size,mandelbrotImageData,mandelbrotCTX,precision){
             set_pixel(mandelbrotImageData,x,y,r,g,b,size);
             }  
         }   
+
+    for (let y = size[1]; y >Math.floor(size[1]/2); y--){
+        for (let x = 0; x <= size[0]; x++){
+            let color = get_pixel(mandelbrotImageData.data,x,size[1]-y,size[0])
+            let r = color[0]
+            let g = color[1]
+            let b = color[2]
+            set_pixel(mandelbrotImageData,x,y,r,g,b,size);
+        }
+    }
+    
         console.timeEnd("temps")
     paint_canvas(mandelbrotImageData, mandelbrotCTX);
 }
@@ -128,6 +142,7 @@ function select_pixel(event,size,mandelbrotImageData,mandelbrotCTX){
     const a = get_positional_mandelbrot_complex(x,y,size)
     console.log("clicked pixel x:", x, " y:",y);
     set_pixel(mandelbrotImageData,x,y,255,255,255,size);
+    set_pixel(mandelbrotImageData,x,size[1]-y,255,255,255,size);
     paint_canvas(mandelbrotImageData, mandelbrotCTX)
     create_julia(a)
 }
@@ -159,4 +174,13 @@ function generate_julia(a,size,imageData,ctx,precision){
             }  
         }   
     paint_canvas(imageData, ctx);
+}
+
+function get_pixel(array, x, y, width){
+    const offset = (y * width + x) * 4;
+    let R = array[offset];
+    let G = array[offset + 1];
+    let B = array[offset + 2];
+    let A = array[offset + 3];
+    return [R,G,B,A];
 }
