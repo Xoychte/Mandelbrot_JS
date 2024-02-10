@@ -39,9 +39,11 @@ window.onload = function() {
     adjust_height(size)
 
     let mandelbrotImageData = mandelbrotCTX.getImageData(0,0,size[0],size[1]);  
-    let precision = 200;
+    let precision = 256;
+    const colormap = create_colormap(precision)
+    console.log(colormap)
 
-    generate_initial(size,mandelbrotImageData, mandelbrotCTX, precision);
+    generate_initial(size,mandelbrotImageData, mandelbrotCTX, precision, colormap);
     mandelbrotCanvas.addEventListener("click", (event) => select_pixel(event,size,mandelbrotImageData,mandelbrotCTX))
 }
 
@@ -70,6 +72,14 @@ function set_pixel(imgData,x,y,r,g,b,size){
     imgData.data [offset + 3] = 255;
 }
 
+function get_pixel(array, x, y, width){
+    const offset = (y * width + x) * 4;
+    let R = array[offset];
+    let G = array[offset + 1];
+    let B = array[offset + 2];
+    let A = array[offset + 3];
+    return [R,G,B,A];
+}
 
 function check_pixel(a, c, precision){
     let z = new complex(a.a, a.b);
@@ -100,7 +110,7 @@ function get_positional_mandelbrot_complex(x,y,size){
     return new complex(-2+2.7*(x/size[0]),-(7/6)+(14/6)*(y/size[1]));
 }
 
-function generate_initial(size,mandelbrotImageData,mandelbrotCTX,precision){
+function generate_initial(size,mandelbrotImageData,mandelbrotCTX,precision,colormap){
     console.time("temps")
     ///Generate the upper half
     for (let y = 0; y <= Math.floor(size[1]/2); y++){
@@ -113,9 +123,15 @@ function generate_initial(size,mandelbrotImageData,mandelbrotCTX,precision){
                 g = 0;
                 b = 0;
             } else {
+                let color = colormap[result];
+                r = color[0];
+                g = color[1];
+                b = color[2];
+                /*
                 r = 0;
-                g = 255*(result/precision)
+                g = 255*(result/precision)   ///No colormap
                 b = 0;
+                */
             }
             set_pixel(mandelbrotImageData,x,y,r,g,b,size);
             }  
@@ -176,11 +192,25 @@ function generate_julia(a,size,imageData,ctx,precision){
     paint_canvas(imageData, ctx);
 }
 
-function get_pixel(array, x, y, width){
-    const offset = (y * width + x) * 4;
-    let R = array[offset];
-    let G = array[offset + 1];
-    let B = array[offset + 2];
-    let A = array[offset + 3];
-    return [R,G,B,A];
+///Testing colormaps
+function ColorMap(p) {
+    let sr=0 ; let sg=0 ; let sb=0;
+    if (p < 64) {
+        sr = 0 ; sg = p * 4 ; sb = 255;
+    } else if (p < 100) {
+        sr = 0 ; sg = 255 ; sb = (255 - (p - 64) * 4);
+    } else if (p < 150) {
+        sr = (p - 128) * 4 ; sg = 255  ;sb = 0;
+    } else {
+        sr = 255 ; sg = (256 - (p - 191) * 4) ; sb = 0;
+    }
+  return [sr ,sg ,sb];
+}
+
+function create_colormap(precision){
+    let colormap = []
+    for (let i = 0; i<=precision+1; i++){
+        colormap.push(ColorMap(i))
+    }
+    return colormap
 }
