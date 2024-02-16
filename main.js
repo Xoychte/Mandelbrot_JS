@@ -40,8 +40,15 @@ window.onload = function() {
 
     let mandelbrotImageData = mandelbrotCTX.getImageData(0,0,size[0],size[1]);  
     let precision = 256;
+
+    console.time("temps de création de la colormap")
     const colormap = create_colormap(precision)
     console.log(colormap)
+    show_colormap(colormap)
+    console.timeEnd("temps de création de la colormap")
+
+    
+
 
     generate_initial(size,mandelbrotImageData, mandelbrotCTX, precision, colormap);
     mandelbrotCanvas.addEventListener("click", (event) => select_pixel(event,size,mandelbrotImageData,mandelbrotCTX))
@@ -111,7 +118,7 @@ function get_positional_mandelbrot_complex(x,y,size){
 }
 
 function generate_initial(size,mandelbrotImageData,mandelbrotCTX,precision,colormap){
-    console.time("temps")
+    console.time("temps de génération de mandelbrot")
     ///Generate the upper half
     for (let y = 0; y <= Math.floor(size[1]/2); y++){
         for (let x = 0; x <= size[0]; x++){
@@ -147,7 +154,7 @@ function generate_initial(size,mandelbrotImageData,mandelbrotCTX,precision,color
         }
     }
     
-        console.timeEnd("temps")
+        console.timeEnd("temps de génération de mandelbrot")
     paint_canvas(mandelbrotImageData, mandelbrotCTX);
 }
 
@@ -193,12 +200,13 @@ function generate_julia(a,size,imageData,ctx,precision){
 }
 
 ///Testing colormaps
-function ColorMap(p) {
+function color_map(p,precision) {
     let sr=0 ; let sg=0 ; let sb=0;
-    if (p < 64) {
-        sr = 0 ; sg = p * 4 ; sb = 255;
-    } else if (p < 100) {
-        sr = 0 ; sg = 255 ; sb = (255 - (p - 64) * 4);
+    if (p < (precision/6)) {
+        sr = 0 ; sg = 0 ; sb = 230 / (10/p);
+    } 
+    else if (((precision / 6.5) <= p) && (p < (precision /3))) {
+        sr = 0 ; sg =  (p - Math.floor(precision/6))*10; sb = (230 / (10/(Math.floor(precision/6))))-Math.floor(p/2);
     } else if (p < 150) {
         sr = (p - 128) * 4 ; sg = 255  ;sb = 0;
     } else {
@@ -207,10 +215,43 @@ function ColorMap(p) {
   return [sr ,sg ,sb];
 }
 
+function color_map_2(p){
+    let r=0 ; let g=0 ; let b=0;
+    r = Math.floor(1.022 ** p)
+    if (p > 0 && p < 150){
+        b = Math.floor(75*Math.log(p) - 2*p)
+    }
+    if (p < 200){
+        g = Math.floor( ( ( p**2 - 0.005*(p**3) ) / 4000 ) * p )
+    }
+
+    return [r ,g ,b]
+}
+
 function create_colormap(precision){
     let colormap = []
     for (let i = 0; i<=precision+1; i++){
-        colormap.push(ColorMap(i))
+        colormap.push(color_map_2(i))
     }
     return colormap
+}
+
+function show_colormap(colormap){
+    let colorCanvas = document.getElementById("colormap");
+    const ctx = colorCanvas.getContext("2d");
+    const width = colormap.length;
+    colorCanvas.setAttribute("width", width);
+    let imageData = ctx.getImageData(0,0,width,20);
+    create_colormap_gradient(ctx,width,imageData,colormap)
+
+}
+
+function create_colormap_gradient(ctx,width,imageData,colormap){
+    for (let x = 0; x < width; x++){
+        let color = colormap[x];
+        for (let y = 0; y < 20; y++){
+            set_pixel(imageData,x,y,color[0],color[1],color[2],[width,20]);
+        }
+    }
+    paint_canvas(imageData,ctx)
 }

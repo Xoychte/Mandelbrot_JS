@@ -5,3 +5,8 @@
 body {
     background-color: black;
 }
+
+#colormap {
+    height: 80px;
+    width: 1024px;
+}
