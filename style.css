@@ -4,9 +4,18 @@
 
 body {
     background-color: black;
+    color: white;
 }
 
 #colormap {
     height: 80px;
     width: 1024px;
+}
+
+#julia {
+    image-rendering: pixelated;
+}
+
+fieldset {
+    width: fit-content;
 }

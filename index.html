@@ -8,6 +8,19 @@
 
 </head>
 <body>
+    <fieldset>
+        <legend>Select the click effect:</legend>
+          <input type="radio" id="noneRadio" name="clickOptions" value="none" checked />
+          <label for="none">None</label> <br/>
+
+          <input type="radio" id="juliaRadio" name="clickOptions" value="julia" />
+          <label for="julia">Julia</label><br/>
+
+          <input type="radio" id="zoomRadio" name="clickOptions" value="zoom" />
+          <label for="zoom">Zoom</label>
+      </fieldset>
+
+
     <canvas id="viewport" width="6400" height="1"></canvas> <br/> <br/>
     <canvas id="colormap" width="1" height="20"> </canvas>  <br/> <br/>
     <canvas id="julia" width="4000" height="4000"></canvas>
